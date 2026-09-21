@@ -1,0 +1,10 @@
+langgraph
+langchain-core
+langchain-groq
+langchain-text-splitters
+pypdf
+faiss-cpu
+numpy
+sentence-transformers
+python-dotenv
+rich
