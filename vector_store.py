@@ -8,14 +8,14 @@ from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer
 
 
-def create_vector_store():
+def create_vector_store(embedding_model):
     reader = PdfReader(PDF_PATH)
     pdf_text = "\n".join(page.extract_text() or "" for page in reader.pages)
 
     splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=150)
     chunks = splitter.split_text(pdf_text)
 
-    embedding_model = SentenceTransformer(MODEL_CACHE_PATH)
+    # embedding_model = SentenceTransformer(MODEL_CACHE_PATH)
     vectors = embedding_model.encode(chunks, normalize_embeddings=True)
     vectors = np.array(vectors, dtype="float32")
 

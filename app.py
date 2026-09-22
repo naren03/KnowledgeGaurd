@@ -1,169 +1,252 @@
 import json
+import uuid
 from pathlib import Path
-from typing import TypedDict
-from config import  PDF_PATH,VECTOR_STORE_PATH,MODEL_CACHE_PATH,MODEL,EMBEDDING_MODEL
-from state import State
-from vector_store import create_vector_store
 
 import faiss
 import numpy as np
 from dotenv import load_dotenv
-from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
-from langchain_core.tools import StructuredTool
 from langchain_groq import ChatGroq
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langgraph.graph import END, START, StateGraph
-from pypdf import PdfReader
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.prompt import Prompt
 from sentence_transformers import SentenceTransformer
 
+from config import (
+    EMBEDDING_MODEL,
+    MODEL,
+    MODEL_CACHE_PATH,
+    VECTOR_STORE_PATH,
+)
+from state import ChatState
+from vector_store import create_vector_store
+
+# ============================================================
+# 1. INITIALIZATION
+# ============================================================
 
 console = Console()
 
 load_dotenv()
 
+thread_id = str(uuid.uuid4())
+
+config = {"configurable": {"thread_id": thread_id}, "run_name": "KnowledgeGaurd"}
+# ============================================================
+# 2. LOAD EMBEDDING MODEL
+# ============================================================
+
 if Path(MODEL_CACHE_PATH).exists():
     console.print("[green]Loading existing embedding model...[/green]")
+
     embedding_model = SentenceTransformer(MODEL_CACHE_PATH)
+
 else:
     console.print("[yellow]Downloading embedding model...[/yellow]")
+
     embedding_model = SentenceTransformer(EMBEDDING_MODEL)
+
     embedding_model.save(MODEL_CACHE_PATH)
 
+
+# ============================================================
+# 3. LOAD OR CREATE VECTOR STORE
+# ============================================================
 
 index_path = Path(VECTOR_STORE_PATH) / "index.faiss"
 chunks_path = Path(VECTOR_STORE_PATH) / "chunks.json"
 
+
 if index_path.exists() and chunks_path.exists():
     console.print("[green]Loading existing vector store...[/green]")
+
     index = faiss.read_index(str(index_path))
+
     chunks = json.loads(chunks_path.read_text(encoding="utf-8"))
+
 else:
     console.print("[yellow]Creating vector store...[/yellow]")
-    index, chunks = create_vector_store()
 
+    index, chunks = create_vector_store(embedding_model)
+
+
+# ============================================================
+# 4. INITIALIZE LLM
+# ============================================================
 
 llm = ChatGroq(model=MODEL, temperature=0)
 
 
-def retrieve(state: State):
-    question_vector = embedding_model.encode([state["question"]], normalize_embeddings=True)
-    question_vector = np.array(question_vector, dtype="float32")
+# ============================================================
+# 5. RETRIEVE NODE
+# ============================================================
 
-    _, chunk_indexes = index.search(question_vector, k=4)
-    selected_chunks = [chunks[i] for i in chunk_indexes[0]]
+
+def retrieve(state: ChatState):
+
+    question = state["question"]
+
+    # Convert question into embedding
+    question_vector = embedding_model.encode([question], normalize_embeddings=True)
+
+    question_vector = np.asarray(question_vector, dtype="float32")
+
+    # Prevent requesting more chunks than available
+    k = min(4, index.ntotal)
+
+    if k == 0:
+        return {"context": []}
+
+    # Search FAISS
+    _, chunk_indexes = index.search(question_vector, k=k)
+
+    # Collect retrieved chunks
+    selected_chunks = [chunks[i] for i in chunk_indexes[0] if i != -1]
 
     return {"context": selected_chunks}
 
 
-def generate(state: State):
-    context = "\n\n".join(state["context"])
+# ============================================================
+# 6. GENERATE NODE
+# ============================================================
+
+
+def generate(state: ChatState):
+
+    question = state["question"]
+
+    context = state.get("context", [])
+
+    # No retrieved context
+    if not context:
+        return {
+            "answer": ("I don't know based on the available Lumetra knowledge base.")
+        }
+
+    # Convert retrieved chunks into text
+    context_text = "\n\n".join(str(chunk) for chunk in context)
 
     prompt = f"""
-            Answer the question using only the context below.
-            If the answer is not in the context, say "I don't know".
+You are KnowledgeGaurd, Lumetra's company knowledge assistant.
 
-            Context:
-            {context}
+Your task is to answer the user's question using ONLY
+the retrieved context from Lumetra's internal knowledge base.
 
-            Question:
-            {state["question"]}
-    """
+Rules:
+1. Use only the provided context.
+2. Do not use external knowledge.
+3. Do not invent facts or information.
+4. If the answer is not available in the context,
+   respond exactly:
+   "I don't know based on the available Lumetra knowledge base."
+5. Give a clear and helpful answer.
+6. If the context is insufficient, do not guess.
+
+Retrieved Context:
+------------------
+{context_text}
+------------------
+
+User Question:
+{question}
+
+Answer:
+"""
 
     response = llm.invoke(prompt)
+
     return {"answer": response.content}
 
 
-graph_builder = StateGraph(State)
+# ============================================================
+# 7. BUILD LANGGRAPH
+# ============================================================
+
+graph_builder = StateGraph(ChatState)
+
+# Add nodes
 graph_builder.add_node("retrieve", retrieve)
 graph_builder.add_node("generate", generate)
 
-
+# Add edges
 graph_builder.add_edge(START, "retrieve")
 graph_builder.add_edge("retrieve", "generate")
 graph_builder.add_edge("generate", END)
 
-
+# Compile graph
 graph = graph_builder.compile()
+
+
+# ============================================================
+# 8. OPTIONAL GRAPH VISUALIZATION
+# ============================================================
+
+# Uncomment to see the graph in your terminal:
+#
 # graph.get_graph().print_ascii()
 
 
-def ask_pdf(question: str) -> str:
-    """Answer a question using the local PDF RAG workflow."""
-    result = graph.invoke({"question": question})
+# ============================================================
+# 9. ASK KNOWLEDGEGAURD
+# ============================================================
+
+
+def ask_knowledgeguard(question: str) -> str:
+    """
+    Ask a question using the fixed RAG workflow.
+
+    Every question follows:
+    START -> RETRIEVE -> GENERATE -> END
+    """
+
+    result = graph.invoke({"question": question}, config=config)
+
     return result["answer"]
 
 
-pdf_rag_tool = StructuredTool.from_function(
-    func=ask_pdf,
-    name="pdf_rag_tool",
-    description="Use this tool to answer questions from the local HR policy PDF.",
-)
-tools = [pdf_rag_tool]
-chat_llm = llm.bind_tools(tools)
-tools_by_name = {tool.name: tool for tool in tools}
-
-messages = [
-    SystemMessage(
-        content=(
-            "You are a helpful chat assistant. "
-            "Use pdf_rag_tool when the user asks about the HR policy PDF, leave, "
-            "vacation, health, wellbeing, sick leave, holidays, or anything that "
-            "may be answered from the local document. "
-            "For normal conversation, answer directly without using a tool."
-        )
-    )
-]
-
+# ============================================================
+# 10. TERMINAL UI
+# ============================================================
 
 console.print(
     Panel.fit(
-        "Chat normally, or ask about the HR policy PDF. Type [bold]exit[/bold], [bold]quit[/bold], or [bold]q[/bold] to stop.",
-        title="Chat App",
+        "[bold cyan]Welcome to KnowledgeGaurd[/bold cyan]\n\n"
+        "[bold white]Lumetra's Knowledge Assistant[/bold white]\n\n"
+        "I'm an AI-powered chatbot designed to help you "
+        "explore and understand Lumetra's knowledge base.\n\n"
+        "Ask me anything related to Lumetra, including "
+        "company information, policies, processes, "
+        "documents, and more.\n\n"
+        "[italic]How can I help you today?[/italic]\n\n"
+        "[dim]Type [bold]exit[/bold], [bold]quit[/bold], "
+        "or [bold]q[/bold] to stop.[/dim]",
         border_style="cyan",
+        padding=(1, 2),
     )
 )
+
+
+# ============================================================
+# 11. CHAT LOOP
+# ============================================================
 
 while True:
     user_input = Prompt.ask("\n[bold cyan]You[/bold cyan]").strip()
 
     if user_input.lower() in {"exit", "quit", "q"}:
         console.print("[cyan]Goodbye![/cyan]")
+
         break
 
     if not user_input:
         console.print("[red]Please enter a message.[/red]")
+
         continue
 
-    with console.status("[bold green]Thinking...[/bold green]", spinner="dots"):
-        messages.append(HumanMessage(content=user_input))
-        ai_message = chat_llm.invoke(messages)
-        messages.append(ai_message)
+    with console.status(
+        "[bold green]Searching Lumetra knowledge base...[/bold green]", spinner="dots"
+    ):
+        answer = ask_knowledgeguard(user_input)
 
-        if ai_message.tool_calls:
-            for tool_call in ai_message.tool_calls:
-                tool = tools_by_name[tool_call["name"]]
-                tool_result = tool.invoke(tool_call["args"])
-                messages.append(
-                    ToolMessage(
-                        content=tool_result,
-                        tool_call_id=tool_call["id"],
-                    )
-                )
-
-            final_message = llm.invoke(messages)
-            messages.append(final_message)
-            answer = final_message.content
-        else:
-            answer = ai_message.content
-
-    console.print(
-        Panel(
-            Markdown(answer),
-            title="Assistant",
-            border_style="green",
-        )
-    )
+    console.print(Panel(Markdown(answer), title="KnowledgeGaurd", border_style="green"))
