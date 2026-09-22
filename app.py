@@ -1,6 +1,9 @@
 import json
 from pathlib import Path
 from typing import TypedDict
+from config import  PDF_PATH,VECTOR_STORE_PATH,MODEL_CACHE_PATH,MODEL,EMBEDDING_MODEL
+from state import State
+from vector_store import create_vector_store
 
 import faiss
 import numpy as np
@@ -18,20 +21,7 @@ from rich.prompt import Prompt
 from sentence_transformers import SentenceTransformer
 
 
-PDF_PATH = "docs/Lumetra_HR_Leave_Vacation_Health_Wellbeing_Policy.pdf"
-VECTOR_STORE_PATH = "vector_store"
-MODEL_CACHE_PATH = "models/all-MiniLM-L6-v2"
-MODEL = "openai/gpt-oss-20b"
-EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-
 console = Console()
-
-
-class State(TypedDict):
-    question: str
-    context: list[str]
-    answer: str
-
 
 load_dotenv()
 
@@ -42,27 +32,6 @@ else:
     console.print("[yellow]Downloading embedding model...[/yellow]")
     embedding_model = SentenceTransformer(EMBEDDING_MODEL)
     embedding_model.save(MODEL_CACHE_PATH)
-
-
-def create_vector_store():
-    reader = PdfReader(PDF_PATH)
-    pdf_text = "\n".join(page.extract_text() or "" for page in reader.pages)
-
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=150)
-    chunks = splitter.split_text(pdf_text)
-
-    vectors = embedding_model.encode(chunks, normalize_embeddings=True)
-    vectors = np.array(vectors, dtype="float32")
-
-    index = faiss.IndexFlatIP(vectors.shape[1])
-    index.add(vectors)
-
-    vector_store_dir = Path(VECTOR_STORE_PATH)
-    vector_store_dir.mkdir(exist_ok=True)
-    faiss.write_index(index, str(vector_store_dir / "index.faiss"))
-    (vector_store_dir / "chunks.json").write_text(json.dumps(chunks), encoding="utf-8")
-
-    return index, chunks
 
 
 index_path = Path(VECTOR_STORE_PATH) / "index.faiss"

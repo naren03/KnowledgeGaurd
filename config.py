@@ -1,0 +1,5 @@
+PDF_PATH = "docs/Lumetra_HR_Leave_Vacation_Health_Wellbeing_Policy.pdf"
+VECTOR_STORE_PATH = "vector_store"
+MODEL_CACHE_PATH = "models/all-MiniLM-L6-v2"
+MODEL = "openai/gpt-oss-20b"
+EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
