@@ -1,11 +1,12 @@
 import json
 from pathlib import Path
-from config import  PDF_PATH,VECTOR_STORE_PATH,MODEL_CACHE_PATH
+
 import faiss
 import numpy as np
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pypdf import PdfReader
-from sentence_transformers import SentenceTransformer
+
+from config import PDF_PATH, VECTOR_STORE_PATH
 
 
 def create_vector_store(embedding_model):

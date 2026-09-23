@@ -58,17 +58,17 @@ index_path = Path(VECTOR_STORE_PATH) / "index.faiss"
 chunks_path = Path(VECTOR_STORE_PATH) / "chunks.json"
 
 
-if index_path.exists() and chunks_path.exists():
-    console.print("[green]Loading existing vector store...[/green]")
+# if index_path.exists() and chunks_path.exists():
+console.print("[green]Loading existing vector store...[/green]")
 
-    index = faiss.read_index(str(index_path))
+index = faiss.read_index(str(index_path))
 
-    chunks = json.loads(chunks_path.read_text(encoding="utf-8"))
+chunks = json.loads(chunks_path.read_text(encoding="utf-8"))
 
-else:
-    console.print("[yellow]Creating vector store...[/yellow]")
+# else:
+#     console.print("[yellow]Creating vector store...[/yellow]")
 
-    index, chunks = create_vector_store(embedding_model)
+#     index, chunks = create_vector_store(embedding_model)
 
 
 # ============================================================
