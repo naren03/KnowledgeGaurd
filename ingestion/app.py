@@ -37,6 +37,8 @@ DOCS_DIR = PROJECT_ROOT / "docs"
 FAISS_DIR = PROJECT_ROOT / "vector_store"
 
 CHUNKS_JSON_PATH = FAISS_DIR / "chunks.json"
+DOCUMENT_PERMISSIONS_PATH = PROJECT_ROOT / "document_permissions.json"
+USERS_PATH = PROJECT_ROOT / "users.json"
 
 
 # ==========================================
@@ -57,6 +59,8 @@ SUPPORTED_EXTENSIONS = {
     ".docx",
     ".xlsx",
     ".pptx",
+    ".md",
+    ".txt",
 }
 
 
@@ -72,6 +76,33 @@ def get_document_files():
         for file_path in DOCS_DIR.rglob("*")
         if (file_path.is_file() and file_path.suffix.lower() in SUPPORTED_EXTENSIONS)
     )
+
+
+def load_document_permissions():
+    permission_data = json.loads(
+        DOCUMENT_PERMISSIONS_PATH.read_text(encoding="utf-8")
+    )
+    users_data = json.loads(USERS_PATH.read_text(encoding="utf-8"))
+    valid_groups = {
+        group
+        for user in users_data["users"]
+        for group in user["groups"]
+    }
+    document_permissions = permission_data["documents"]
+
+    if not isinstance(document_permissions, dict):
+        raise ValueError("The 'documents' permission entry must be an object.")
+
+    for document_path, groups in document_permissions.items():
+        if not isinstance(groups, list) or any(
+            group not in valid_groups for group in groups
+        ):
+            raise ValueError(
+                f"Invalid group list for {document_path!r}; "
+                f"allowed groups are {sorted(valid_groups)}."
+            )
+
+    return document_permissions
 
 
 # ==========================================
@@ -102,6 +133,8 @@ def main():
         console.print("[yellow]No supported documents found.[/yellow]")
 
         return
+
+    document_permissions = load_document_permissions()
 
     console.print(f"[green]Found {len(document_files)} documents.[/green]\n")
 
@@ -166,7 +199,14 @@ def main():
                 # STEP 2: ADD METADATA
                 # ------------------------------
 
-                relative_source = str(file_path.relative_to(PROJECT_ROOT))
+                relative_source = file_path.relative_to(PROJECT_ROOT).as_posix()
+                allowed_groups = document_permissions.get(relative_source, [])
+
+                if not allowed_groups:
+                    console.print(
+                        f"  [yellow]No groups configured for {relative_source}; "
+                        "chunks will be inaccessible.[/yellow]"
+                    )
 
                 for document in raw_documents:
                     document.metadata.update(
@@ -175,6 +215,7 @@ def main():
                             "source_path": relative_source,
                             "file_name": file_path.name,
                             "file_type": file_path.suffix.lower(),
+                            "allowed_groups": allowed_groups,
                         }
                     )
 

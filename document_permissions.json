@@ -1,0 +1,15 @@
+{
+  "documents": {
+    "docs/Company_Overview.pptx": ["Engineering", "HR", "Management"],
+    "docs/Department_Budget.xlsx": ["Management"],
+    "docs/Deployment_Runbook.md": ["Engineering", "Management"],
+    "docs/Employee_Onboarding_Guide.docx": ["HR", "Management"],
+    "docs/Engineering_Handbook.pdf": ["Engineering"],
+    "docs/Engineering_Onboarding.pptx": ["Engineering"],
+    "docs/IT_Support_FAQ.txt": ["Engineering", "HR", "Management"],
+    "docs/Leave_Policy.docx": ["HR", "Management"],
+    "docs/Lumetra_HR_Leave_Vacation_Health_Wellbeing_Policy.pdf": ["HR", "Management"],
+    "docs/Remote_Work_Policy.pdf": ["Engineering", "HR", "Management"],
+    "docs/Travel_Reimbursement.xlsx": ["Engineering", "HR", "Management"]
+  }
+}

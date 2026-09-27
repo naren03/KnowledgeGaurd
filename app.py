@@ -30,6 +30,19 @@ console = Console()
 
 load_dotenv()
 
+USER_ID = "u002"
+USERS_PATH = Path(__file__).resolve().parent / "users.json"
+users = json.loads(USERS_PATH.read_text(encoding="utf-8"))["users"]
+current_user = next(
+    (user for user in users if user["user_id"] == USER_ID),
+    None,
+)
+
+if current_user is None:
+    raise ValueError(f"User ID {USER_ID!r} was not found in {USERS_PATH}.")
+
+current_user_groups = set(current_user["groups"])
+
 thread_id = str(uuid.uuid4())
 
 config = {"configurable": {"thread_id": thread_id}, "run_name": "KnowledgeGaurd"}
@@ -92,8 +105,8 @@ def retrieve(state: ChatState):
 
     question_vector = np.asarray(question_vector, dtype="float32")
 
-    # Prevent requesting more chunks than available
-    k = min(4, index.ntotal)
+    # Search all indexed chunks so restricted matches cannot crowd out access.
+    k = index.ntotal
 
     if k == 0:
         return {"context": []}
@@ -101,8 +114,23 @@ def retrieve(state: ChatState):
     # Search FAISS
     _, chunk_indexes = index.search(question_vector, k=k)
 
-    # Collect retrieved chunks
-    selected_chunks = [chunks[i] for i in chunk_indexes[0] if i != -1]
+    # Only authorized chunks may enter the generation context.
+    selected_chunks = []
+    for chunk_index in chunk_indexes[0]:
+        if chunk_index == -1:
+            continue
+
+        chunk = chunks[chunk_index]
+        metadata = chunk.get("metadata", {}) if isinstance(chunk, dict) else {}
+        allowed_groups = metadata.get("allowed_groups", [])
+
+        if isinstance(allowed_groups, list) and current_user_groups.intersection(
+            allowed_groups
+        ):
+            selected_chunks.append(chunk)
+
+        if len(selected_chunks) == 4:
+            break
 
     return {"context": selected_chunks}
 
@@ -121,7 +149,7 @@ def generate(state: ChatState):
     # No retrieved context
     if not context:
         return {
-            "answer": ("I don't know based on the available Lumetra knowledge base.")
+            "answer": "I couldn't find relevant information in the available knowledge base."
         }
 
     # Convert retrieved chunks into text
@@ -139,7 +167,7 @@ def generate(state: ChatState):
     3. Do not invent facts or information.
     4. If the answer is not available in the context,
     respond exactly:
-    "I don't know based on the available Lumetra knowledge base."
+    "I couldn't find relevant information in the available knowledge base."
     5. Give a clear and helpful answer.
     6. If the context is insufficient, do not guess.
     7. After the answer, provide a "Sources" section.
@@ -217,6 +245,12 @@ def ask_knowledgeguard(question: str) -> str:
 # ============================================================
 # 10. TERMINAL UI
 # ============================================================
+
+console.print(
+    f"[bold]User ID:[/bold] {current_user['user_id']}  "
+    f"[bold]Name:[/bold] {current_user['name']}  "
+    f"[bold]Groups:[/bold] {', '.join(current_user['groups'])}"
+)
 
 console.print(
     Panel.fit(

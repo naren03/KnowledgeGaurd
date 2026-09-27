@@ -1,0 +1,49 @@
+{
+  "users": [
+    {
+      "user_id": "u001",
+      "name": "Narendra",
+      "groups": [
+        "Engineering"
+      ]
+    },
+    {
+      "user_id": "u002",
+      "name": "Priya",
+      "groups": [
+        "HR"
+      ]
+    },
+    {
+      "user_id": "u003",
+      "name": "David",
+      "groups": [
+        "Management"
+      ]
+    },
+    {
+      "user_id": "u004",
+      "name": "Rahul",
+      "groups": [
+        "Engineering",
+        "Management"
+      ]
+    },
+    {
+      "user_id": "u005",
+      "name": "Anita",
+      "groups": [
+        "HR",
+        "Management"
+      ]
+    },
+    {
+      "user_id": "u006",
+      "name": "Vikram",
+      "groups": [
+        "Engineering",
+        "HR"
+      ]
+    }
+  ]
+}

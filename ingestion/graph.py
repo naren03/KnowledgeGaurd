@@ -8,8 +8,10 @@ from langgraph.graph import (
 )
 from parsers.docx_parser import parse_docx
 from parsers.excel_parser import parse_excel
+from parsers.markdown_parser import parse_markdown
 from parsers.pdf_parser import parse_pdf
 from parsers.pptx_parser import parse_pptx
+from parsers.text_parser import parse_text
 from router import detect_file_type
 
 from state import IngestionState
@@ -31,6 +33,8 @@ def route_by_type(
     "parse_docx",
     "parse_excel",
     "parse_pptx",
+    "parse_markdown",
+    "parse_text",
 ]:
     file_type = state["file_type"]
 
@@ -39,6 +43,8 @@ def route_by_type(
         "docx": "parse_docx",
         "xlsx": "parse_excel",
         "pptx": "parse_pptx",
+        "md": "parse_markdown",
+        "txt": "parse_text",
     }
 
     if file_type not in routes:
@@ -67,6 +73,16 @@ def parse_pptx_node(state: IngestionState):
     return {"raw_documents": docs}
 
 
+def parse_markdown_node(state: IngestionState):
+    docs = parse_markdown(state["file_path"])
+    return {"raw_documents": docs}
+
+
+def parse_text_node(state: IngestionState):
+    docs = parse_text(state["file_path"])
+    return {"raw_documents": docs}
+
+
 builder = StateGraph(IngestionState)
 
 builder.add_node("detect_type", detect_type_node)
@@ -75,6 +91,8 @@ builder.add_node("parse_pdf", parse_pdf_node)
 builder.add_node("parse_docx", parse_docx_node)
 builder.add_node("parse_excel", parse_excel_node)
 builder.add_node("parse_pptx", parse_pptx_node)
+builder.add_node("parse_markdown", parse_markdown_node)
+builder.add_node("parse_text", parse_text_node)
 
 builder.add_edge(START, "detect_type")
 
@@ -87,6 +105,8 @@ builder.add_edge("parse_pdf", END)
 builder.add_edge("parse_docx", END)
 builder.add_edge("parse_excel", END)
 builder.add_edge("parse_pptx", END)
+builder.add_edge("parse_markdown", END)
+builder.add_edge("parse_text", END)
 
 ingestion_graph = builder.compile()
 # ingestion_graph.get_graph().print_ascii()
