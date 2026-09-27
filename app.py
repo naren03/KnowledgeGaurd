@@ -3,7 +3,6 @@ import uuid
 from pathlib import Path
 
 import faiss
-import numpy as np
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langgraph.graph import END, START, StateGraph
@@ -19,8 +18,8 @@ from config import (
     MODEL_CACHE_PATH,
     VECTOR_STORE_PATH,
 )
+from retrieval import retrieve_chunks
 from state import ChatState
-from vector_store import create_vector_store
 
 # ============================================================
 # 1. INITIALIZATION
@@ -30,7 +29,7 @@ console = Console()
 
 load_dotenv()
 
-USER_ID = "u002"
+USER_ID = "u003"
 USERS_PATH = Path(__file__).resolve().parent / "users.json"
 users = json.loads(USERS_PATH.read_text(encoding="utf-8"))["users"]
 current_user = next(
@@ -97,42 +96,16 @@ llm = ChatGroq(model=MODEL, temperature=0)
 
 
 def retrieve(state: ChatState):
-
-    question = state["question"]
-
-    # Convert question into embedding
-    question_vector = embedding_model.encode([question], normalize_embeddings=True)
-
-    question_vector = np.asarray(question_vector, dtype="float32")
-
-    # Search all indexed chunks so restricted matches cannot crowd out access.
-    k = index.ntotal
-
-    if k == 0:
-        return {"context": []}
-
-    # Search FAISS
-    _, chunk_indexes = index.search(question_vector, k=k)
-
-    # Only authorized chunks may enter the generation context.
-    selected_chunks = []
-    for chunk_index in chunk_indexes[0]:
-        if chunk_index == -1:
-            continue
-
-        chunk = chunks[chunk_index]
-        metadata = chunk.get("metadata", {}) if isinstance(chunk, dict) else {}
-        allowed_groups = metadata.get("allowed_groups", [])
-
-        if isinstance(allowed_groups, list) and current_user_groups.intersection(
-            allowed_groups
-        ):
-            selected_chunks.append(chunk)
-
-        if len(selected_chunks) == 4:
-            break
-
-    return {"context": selected_chunks}
+    return {
+        "context": retrieve_chunks(
+            question=state["question"],
+            embedding_model=embedding_model,
+            index=index,
+            chunks=chunks,
+            user_groups=current_user_groups,
+            limit=4,
+        )
+    }
 
 
 # ============================================================

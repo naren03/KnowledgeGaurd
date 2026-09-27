@@ -1,15 +1,30 @@
 {
   "documents": {
     "docs/Company_Overview.pptx": ["Engineering", "HR", "Management"],
+    "docs/Company_Overview_2025.pptx": ["Management", "HR"],
+
     "docs/Department_Budget.xlsx": ["Management"],
+    "docs/Department_Budget_FY2026_R2.xlsx": ["Management"],
+
     "docs/Deployment_Runbook.md": ["Engineering", "Management"],
+    "docs/Deployment_Runbook_v1.6.md": ["Engineering", "Management"],
+
     "docs/Employee_Onboarding_Guide.docx": ["HR", "Management"],
     "docs/Engineering_Handbook.pdf": ["Engineering"],
     "docs/Engineering_Onboarding.pptx": ["Engineering"],
     "docs/IT_Support_FAQ.txt": ["Engineering", "HR", "Management"],
+
     "docs/Leave_Policy.docx": ["HR", "Management"],
     "docs/Lumetra_HR_Leave_Vacation_Health_Wellbeing_Policy.pdf": ["HR", "Management"],
+    "docs/Leave_Policy_Appendix_2026.pdf": ["HR"],
+
     "docs/Remote_Work_Policy.pdf": ["Engineering", "HR", "Management"],
-    "docs/Travel_Reimbursement.xlsx": ["Engineering", "HR", "Management"]
+    "docs/Remote_Work_Policy_v3.1.pdf": ["Engineering", "HR", "Management"],
+
+    "docs/Travel_Reimbursement.xlsx": ["Engineering", "HR", "Management"],
+    "docs/Incident_Response_Runbook.pdf": ["Engineering", "Management"],
+    "docs/Performance_Review_Guidelines.docx": ["HR", "Engineering", "Management"],
+    "docs/Procurement_Approval_Matrix.xlsx": ["Management", "Engineering", "HR"],
+    "docs/Employee_Handbook_Excerpt.txt": ["HR", "Management"]
   }
 }

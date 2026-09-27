@@ -1,0 +1,303 @@
+[
+  {
+    "id": "company-overview-current",
+    "question": "According to the FY2026 snapshot, approximately how many employees did Lumetra have in July 2026?",
+    "user_id": "u001",
+    "expected": [
+      {
+        "source_path": "docs/Company_Overview.pptx",
+        "contains": ["78 employees", "July 2026"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "company-overview-focus",
+    "question": "What is Lumetra focused on as a B2B software company?",
+    "user_id": "u001",
+    "expected": [
+      {
+        "source_path": "docs/Company_Overview.pptx",
+        "contains": ["workflow automation", "operational visibility"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "company-overview-2025",
+    "question": "What was the approximate company headcount in October 2025?",
+    "user_id": "u003",
+    "expected": [
+      {
+        "source_path": "docs/Company_Overview_2025.pptx",
+        "contains": ["61 employees", "October 2025"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "budget-original",
+    "question": "In the original FY2026 budget, what were Engineering's budget and forecast?",
+    "user_id": "u003",
+    "expected": [
+      {
+        "source_path": "docs/Department_Budget.xlsx",
+        "contains": ["Engineering | 4200000 | 2380000 | 4050000 | 150000"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "budget-r2",
+    "question": "In the FY2026 R2 approved budget, what were Engineering's travel and contractor allocations?",
+    "user_id": "u003",
+    "expected": [
+      {
+        "source_path": "docs/Department_Budget_FY2026_R2.xlsx",
+        "contains": ["Engineering | 4000000 | 180000 | 620000"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "deployment-current",
+    "question": "Under the current deployment runbook, who approves routine production releases?",
+    "user_id": "u001",
+    "expected": [
+      {
+        "source_path": "docs/Deployment_Runbook.md",
+        "contains": ["service owner approves routine releases", "material customer-impacting changes"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "deployment-v1-6",
+    "question": "What approval did the March 2026 deployment runbook require for production deployments?",
+    "user_id": "u004",
+    "expected": [
+      {
+        "source_path": "docs/Deployment_Runbook_v1.6.md",
+        "contains": ["all production deployments require approval from the Engineering Manager"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "handbook-leave-guidance",
+    "question": "How should employees arrange planned leave, and which document controls current entitlement figures?",
+    "user_id": "u002",
+    "expected": [
+      {
+        "source_path": "docs/Employee_Handbook_Excerpt.txt",
+        "contains": ["request planned leave in advance", "coordinate coverage with their manager", "dedicated Leave Policy"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "employee-onboarding",
+    "question": "What should be prepared before a new employee joins, and what happens during the first week?",
+    "user_id": "u005",
+    "expected": [
+      {
+        "source_path": "docs/Employee_Onboarding_Guide.docx",
+        "contains": ["HR confirms employment records", "IT prepares standard equipment", "first-week priorities", "first week"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "engineering-handbook",
+    "question": "What should reviewers check in an engineering pull request, and what should service owners maintain?",
+    "user_id": "u001",
+    "expected": [
+      {
+        "source_path": "docs/Engineering_Handbook.pdf",
+        "contains": ["correctness", "tests", "security implications", "dashboards, alerts, runbooks"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "engineering-onboarding",
+    "question": "Name first-week Engineering onboarding activities and the condition required before merge.",
+    "user_id": "u001",
+    "expected": [
+      {
+        "source_path": "docs/Engineering_Onboarding.pptx",
+        "contains": ["Architecture walkthrough", "Local development setup", "CI must be green before merge"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "incident-response",
+    "question": "What does SEV-1 mean, and who coordinates incident response?",
+    "user_id": "u004",
+    "expected": [
+      {
+        "source_path": "docs/Incident_Response_Runbook.pdf",
+        "contains": ["material customer or data impact", "Incident Commander coordinates response"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "it-support-access",
+    "question": "How do I request system access, and what should I avoid after a failed sign-in?",
+    "user_id": "u006",
+    "expected": [
+      {
+        "source_path": "docs/IT_Support_FAQ.txt",
+        "contains": ["Open an IT request", "business purpose and manager", "Do not repeatedly attempt failed authentication"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "leave-policy-current",
+    "question": "What are the current annual-leave and sick-leave amounts?",
+    "user_id": "u005",
+    "expected": [
+      {
+        "source_path": "docs/Leave_Policy.docx",
+        "contains": ["24 working days of annual leave", "12 paid sick days"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "leave-appendix",
+    "question": "What does the 2026 leave appendix say about regional holiday entries and entitlement amounts?",
+    "user_id": "u002",
+    "expected": [
+      {
+        "source_path": "docs/Leave_Policy_Appendix_2026.pdf",
+        "contains": ["Two regional holiday entries", "awaiting final HR confirmation", "current Leave Policy"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "leave-policy-historical",
+    "question": "What vacation and sick-leave amounts did the older combined policy state?",
+    "user_id": "u005",
+    "expected": [
+      {
+        "source_path": "docs/Lumetra_HR_Leave_Vacation_Health_Wellbeing_Policy.pdf",
+        "contains": ["20 working days of annual vacation", "10 paid sick days", "predates the dedicated Leave Policy"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "performance-review",
+    "question": "How often are formal performance reviews and lighter check-ins?",
+    "user_id": "u005",
+    "expected": [
+      {
+        "source_path": "docs/Performance_Review_Guidelines.docx",
+        "contains": ["twice per year", "quarterly check-ins"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "procurement-equipment",
+    "question": "Who approves equipment costing 120000, and what is normally expected?",
+    "user_id": "u003",
+    "expected": [
+      {
+        "source_path": "docs/Procurement_Approval_Matrix.xlsx",
+        "contains": ["Equipment", "Management", "Two quotes normally expected"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "remote-work-current",
+    "question": "Under the current remote-work policy, what affects eligibility and what location change should be reported?",
+    "user_id": "u006",
+    "expected": [
+      {
+        "source_path": "docs/Remote_Work_Policy.pdf",
+        "contains": ["role, security, customer obligations and team coverage", "materially different location"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "remote-work-historical",
+    "question": "What office-presence rule did the older remote-work policy state?",
+    "user_id": "u004",
+    "expected": [
+      {
+        "source_path": "docs/Remote_Work_Policy_v3.1.pdf",
+        "contains": ["two common office days each week", "replaced by v4.0"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "travel-reimbursement",
+    "question": "What is the domestic hotel limit in the travel reimbursement rates?",
+    "user_id": "u001",
+    "expected": [
+      {
+        "source_path": "docs/Travel_Reimbursement.xlsx",
+        "contains": ["8,000/night"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "travel-expense-deadline",
+    "question": "How soon must an expense be submitted?",
+    "user_id": "u001",
+    "expected": [
+      {
+        "source_path": "docs/Travel_Reimbursement.xlsx",
+        "contains": ["within 10 business days"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "deny-engineering-to-hr",
+    "question": "What does the Engineering handbook say about security and code review?",
+    "user_id": "u002",
+    "expected": [],
+    "forbidden_sources": ["docs/Engineering_Handbook.pdf", "docs/Engineering_Onboarding.pptx"]
+  },
+  {
+    "id": "deny-management-budget-to-engineering",
+    "question": "What are the FY2026 Engineering budget and contractor figures?",
+    "user_id": "u001",
+    "expected": [],
+    "forbidden_sources": ["docs/Department_Budget.xlsx", "docs/Department_Budget_FY2026_R2.xlsx"]
+  },
+  {
+    "id": "deny-hr-appendix-to-management",
+    "question": "What regional holidays are still pending confirmation in the leave appendix?",
+    "user_id": "u003",
+    "expected": [],
+    "forbidden_sources": ["docs/Leave_Policy_Appendix_2026.pdf"]
+  },
+  {
+    "id": "mixed-engineering-hr-access",
+    "question": "Who should a new engineer ask about local engineering workflow, and how do employees request system access?",
+    "user_id": "u006",
+    "expected": [
+      {
+        "source_path": "docs/Engineering_Onboarding.pptx",
+        "contains": ["Buddy: local engineering workflow"]
+      },
+      {
+        "source_path": "docs/IT_Support_FAQ.txt",
+        "contains": ["Open an IT request", "business purpose and manager"]
+      }
+    ],
+    "forbidden_sources": []
+  }
+]

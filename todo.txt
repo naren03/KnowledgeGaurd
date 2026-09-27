@@ -1,0 +1,11 @@
+make docs more real with time - Permission-Aware Enterprise Knowledge System — Project Guide -  Point 6
+
+add human in loop - point 20
+
+evaul - point 22
+
+metrics - point 23
+
+observability - point 24
+
+deployment
