@@ -1,8 +1,13 @@
 langgraph
 langchain-core
 langchain-groq
+langchain-community
+langchain-huggingface
 langchain-text-splitters
 pypdf
+python-docx
+openpyxl
+python-pptx
 faiss-cpu
 numpy
 sentence-transformers

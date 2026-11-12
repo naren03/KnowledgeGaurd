@@ -115,6 +115,41 @@ class RetrieveChunksTests(unittest.TestCase):
         )
         self.assertIsNone(self.embedding_model.normalize_embeddings)
 
+    def test_hybrid_bm25_boosts_relevant_authorized_chunk_without_leaking(self):
+        chunks = [
+            make_chunk(
+                "docs/Department_Budget.xlsx",
+                ["Management"],
+                content="FY2026 deployment budget allocation and travel.",
+            ),
+            make_chunk(
+                "docs/General_Notes.txt",
+                ["Engineering"],
+                content="General weekly meeting notes and team updates.",
+            ),
+            make_chunk(
+                "docs/Deployment_Runbook.md",
+                ["Engineering"],
+                content="The service owner approves routine releases in production.",
+            ),
+        ]
+        index = FakeIndex([0, 1, 2])
+
+        selected = retrieve_chunks(
+            "Who approves routine releases?",
+            self.embedding_model,
+            index,
+            chunks,
+            ["Engineering"],
+            limit=2,
+        )
+
+        self.assertEqual(
+            selected[0]["metadata"]["source_path"],
+            "docs/Deployment_Runbook.md",
+        )
+        self.assertNotIn("Department_Budget", str(selected))
+
 
 if __name__ == "__main__":
     unittest.main()

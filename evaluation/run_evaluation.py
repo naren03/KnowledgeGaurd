@@ -24,7 +24,7 @@ def evaluate_case(case, users_by_id, embedding_model, index, chunks):
         index=index,
         chunks=chunks,
         user_groups=user["groups"],
-        limit=4,
+        limit=8,
     )
 
     chunks_by_source = {}

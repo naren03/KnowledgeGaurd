@@ -1,7 +1,9 @@
-from typing import TypedDict
+from typing import Any, TypedDict
 
 
-class ChatState(TypedDict):
+class ChatState(TypedDict, total=False):
     question: str
-    context: list[dict[str, object]]
+    user_id: str
+    context: list[dict[str, Any]]
     answer: str
+    audit_data: dict[str, Any]

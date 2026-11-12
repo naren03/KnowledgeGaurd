@@ -299,5 +299,235 @@
       }
     ],
     "forbidden_sources": []
+  },
+
+
+  {
+    "id": "deny-eng-to-leave-appendix",
+    "question": "What does the 2026 leave appendix say about regional holiday entries?",
+    "user_id": "u001",
+    "expected": [],
+    "forbidden_sources": ["docs/Leave_Policy_Appendix_2026.pdf"]
+  },
+  {
+    "id": "deny-eng-to-onboarding-guide",
+    "question": "What happens during a new employee's first week according to the onboarding guide?",
+    "user_id": "u001",
+    "expected": [],
+    "forbidden_sources": ["docs/Employee_Onboarding_Guide.docx", "docs/Employee_Handbook_Excerpt.txt"]
+  },
+  {
+    "id": "deny-hr-to-eng-onboarding",
+    "question": "What are the first-week engineering onboarding activities and the CI merge requirement?",
+    "user_id": "u002",
+    "expected": [],
+    "forbidden_sources": ["docs/Engineering_Onboarding.pptx", "docs/Engineering_Handbook.pdf"]
+  },
+  {
+    "id": "deny-eng-to-budget-r2",
+    "question": "What travel and contractor allocations were approved for Engineering in the FY2026 R2 budget?",
+    "user_id": "u001",
+    "expected": [],
+    "forbidden_sources": ["docs/Department_Budget_FY2026_R2.xlsx", "docs/Department_Budget.xlsx"]
+  },
+  {
+    "id": "deny-mgmt-to-eng-handbook",
+    "question": "What should reviewers check in an engineering pull request according to the Engineering Handbook?",
+    "user_id": "u003",
+    "expected": [],
+    "forbidden_sources": ["docs/Engineering_Handbook.pdf", "docs/Engineering_Onboarding.pptx"]
+  },
+  {
+    "id": "deny-eng-to-leave-policy",
+    "question": "How many annual leave days and sick days are employees entitled to under the current Leave Policy?",
+    "user_id": "u001",
+    "expected": [],
+    "forbidden_sources": ["docs/Leave_Policy.docx", "docs/Leave_Policy_Appendix_2026.pdf", "docs/Employee_Handbook_Excerpt.txt"]
+  },
+  {
+    "id": "deny-hr-to-deployment-runbook",
+    "question": "Who approves routine production releases under the current deployment runbook?",
+    "user_id": "u002",
+    "expected": [],
+    "forbidden_sources": ["docs/Deployment_Runbook.md", "docs/Deployment_Runbook_v1.6.md"]
+  },
+  {
+    "id": "deny-hr-to-incident-runbook",
+    "question": "What does a SEV-1 incident mean and who coordinates the response?",
+    "user_id": "u002",
+    "expected": [],
+    "forbidden_sources": ["docs/Incident_Response_Runbook.pdf"]
+  },
+
+
+  {
+    "id": "cross-doc-vacation-change",
+    "question": "How have vacation day entitlements changed from the older combined HR policy to the current dedicated Leave Policy?",
+    "user_id": "u005",
+    "expected": [
+      {
+        "source_path": "docs/Lumetra_HR_Leave_Vacation_Health_Wellbeing_Policy.pdf",
+        "contains": ["20 working days of annual vacation"]
+      },
+      {
+        "source_path": "docs/Leave_Policy.docx",
+        "contains": ["24 working days of annual leave"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "cross-doc-deployment-approval-compare",
+    "question": "Compare the deployment approval process between the v1.6 runbook and the current runbook. How has it changed?",
+    "user_id": "u004",
+    "expected": [
+      {
+        "source_path": "docs/Deployment_Runbook_v1.6.md",
+        "contains": ["all production deployments require approval from the Engineering Manager"]
+      },
+      {
+        "source_path": "docs/Deployment_Runbook.md",
+        "contains": ["service owner approves routine releases"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "cross-doc-remote-work-evolution",
+    "question": "How has the remote work policy evolved from v3.1 to the current version regarding office presence requirements?",
+    "user_id": "u004",
+    "expected": [
+      {
+        "source_path": "docs/Remote_Work_Policy_v3.1.pdf",
+        "contains": ["two common office days each week"]
+      },
+      {
+        "source_path": "docs/Remote_Work_Policy.pdf",
+        "contains": ["role, security, customer obligations and team coverage"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "cross-doc-headcount-growth",
+    "question": "How has Lumetra's headcount grown between the 2025 and current company overviews?",
+    "user_id": "u003",
+    "expected": [
+      {
+        "source_path": "docs/Company_Overview_2025.pptx",
+        "contains": ["61 employees"]
+      },
+      {
+        "source_path": "docs/Company_Overview.pptx",
+        "contains": ["78 employees"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+
+
+  {
+    "id": "edge-short-query-vacation",
+    "question": "vacation days?",
+    "user_id": "u005",
+    "expected": [
+      {
+        "source_path": "docs/Leave_Policy.docx",
+        "contains": ["24 working days of annual leave"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "edge-ambiguous-leave",
+    "question": "What is Lumetra's leave policy?",
+    "user_id": "u005",
+    "expected": [
+      {
+        "source_path": "docs/Leave_Policy.docx",
+        "contains": ["24 working days of annual leave"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "edge-nonexistent-content",
+    "question": "What is Lumetra's stock option vesting schedule for new hires?",
+    "user_id": "u001",
+    "expected": [],
+    "forbidden_sources": []
+  },
+  {
+    "id": "edge-misleading-phrasing",
+    "question": "According to the Engineering Handbook, how many vacation days do engineers get?",
+    "user_id": "u001",
+    "expected": [],
+    "forbidden_sources": []
+  },
+
+
+  {
+    "id": "multi-group-eng-mgmt-budget-and-deploy",
+    "question": "What were Engineering's original FY2026 budget and forecast, and who approves routine deployments?",
+    "user_id": "u004",
+    "expected": [
+      {
+        "source_path": "docs/Department_Budget.xlsx",
+        "contains": ["Engineering | 4200000 | 2380000 | 4050000 | 150000"]
+      },
+      {
+        "source_path": "docs/Deployment_Runbook.md",
+        "contains": ["service owner approves routine releases"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "multi-group-hr-mgmt-onboarding-and-leave",
+    "question": "What should be prepared before a new employee joins, and how many sick days are available?",
+    "user_id": "u005",
+    "expected": [
+      {
+        "source_path": "docs/Employee_Onboarding_Guide.docx",
+        "contains": ["HR confirms employment records", "IT prepares standard equipment"]
+      },
+      {
+        "source_path": "docs/Leave_Policy.docx",
+        "contains": ["12 paid sick days"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "multi-group-eng-hr-review-and-handbook",
+    "question": "How often are performance reviews held, and what should engineering service owners maintain?",
+    "user_id": "u006",
+    "expected": [
+      {
+        "source_path": "docs/Performance_Review_Guidelines.docx",
+        "contains": ["twice per year", "quarterly check-ins"]
+      },
+      {
+        "source_path": "docs/Engineering_Handbook.pdf",
+        "contains": ["dashboards, alerts, runbooks"]
+      }
+    ],
+    "forbidden_sources": []
+  },
+  {
+    "id": "multi-group-eng-hr-travel-and-it",
+    "question": "What is the domestic hotel reimbursement limit, and how should employees request new system access?",
+    "user_id": "u006",
+    "expected": [
+      {
+        "source_path": "docs/Travel_Reimbursement.xlsx",
+        "contains": ["8,000/night"]
+      },
+      {
+        "source_path": "docs/IT_Support_FAQ.txt",
+        "contains": ["Open an IT request"]
+      }
+    ],
+    "forbidden_sources": []
   }
 ]

@@ -1,11 +1,20 @@
-make docs more real with time - Permission-Aware Enterprise Knowledge System — Project Guide -  Point 6
+make docs more real with time - Permission-Aware Enterprise Knowledge System — Project Guide - Point 6 [COMPLETED]
+- Expanded all 20 multi-format docs (PDF, DOCX, XLSX, PPTX, MD, TXT) with realistic enterprise content & versioning (139 chunks)
+- Upgraded retrieval to Hybrid FAISS + BM25 RRF with source diversity (retrieval.py)
 
 add human in loop - point 20
 
-evaul - point 22
+evaul - point 22 [COMPLETED]
+- LLM-as-a-Judge (Faithfulness & Answer Relevance via Groq)
+- Citation Accuracy & Source Attribution verification
+- Permission Refusal & ACL Leakage check (evaluation/evaluate_rag.py)
 
-metrics - point 23
+metrics - point 23 [COMPLETED]
+- Overall Pass Rate, ACL Leakage Rate (0.0%), Faithfulness Score, Latency (ms)
 
-observability - point 24
+observability - point 24 [COMPLETED]
+- Structured Enterprise Audit Logging (logs/audit.jsonl)
+- LangSmith / Phoenix Tracing Integration (observability/tracer.py)
+- Observability Dashboard CLI (observability/dashboard.py)
 
 deployment

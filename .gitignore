@@ -10,6 +10,8 @@ __pycache__/
 
 vector_store/
 models/
+logs/
+evaluation/eval_results.json
 
 .DS_Store
 Thumbs.db

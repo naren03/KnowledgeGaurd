@@ -46,8 +46,10 @@ USERS_PATH = PROJECT_ROOT / "users.json"
 # ==========================================
 
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+LOCAL_MODEL_PATH = PROJECT_ROOT / "models" / "all-MiniLM-L6-v2"
+model_source = str(LOCAL_MODEL_PATH) if LOCAL_MODEL_PATH.exists() else EMBEDDING_MODEL
 
-embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
+embeddings = HuggingFaceEmbeddings(model_name=model_source)
 
 
 # ==========================================

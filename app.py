@@ -1,6 +1,7 @@
 import json
 import uuid
 from pathlib import Path
+from typing import Any
 
 import faiss
 from dotenv import load_dotenv
@@ -18,7 +19,9 @@ from config import (
     MODEL_CACHE_PATH,
     VECTOR_STORE_PATH,
 )
-from retrieval import retrieve_chunks
+from observability.audit_logger import log_query_event
+from observability.tracer import measure_latency, setup_langsmith_tracing, setup_phoenix_tracing
+from retrieval import retrieve_chunks, retrieve_chunks_with_audit
 from state import ChatState
 
 # ============================================================
@@ -45,6 +48,10 @@ current_user_groups = set(current_user["groups"])
 thread_id = str(uuid.uuid4())
 
 config = {"configurable": {"thread_id": thread_id}, "run_name": "KnowledgeGaurd"}
+
+# Initialize tracing if configured
+setup_langsmith_tracing()
+setup_phoenix_tracing()
 # ============================================================
 # 2. LOAD EMBEDDING MODEL
 # ============================================================
@@ -96,15 +103,22 @@ llm = ChatGroq(model=MODEL, temperature=0)
 
 
 def retrieve(state: ChatState):
+    user_id = state.get("user_id") or USER_ID
+    user = next((u for u in users if u["user_id"] == user_id), None)
+    user_groups = set(user["groups"]) if user else current_user_groups
+
+    selected_chunks, audit_data = retrieve_chunks_with_audit(
+        question=state["question"],
+        embedding_model=embedding_model,
+        index=index,
+        chunks=chunks,
+        user_groups=user_groups,
+        limit=8,
+    )
+
     return {
-        "context": retrieve_chunks(
-            question=state["question"],
-            embedding_model=embedding_model,
-            index=index,
-            chunks=chunks,
-            user_groups=current_user_groups,
-            limit=4,
-        )
+        "context": selected_chunks,
+        "audit_data": audit_data,
     }
 
 
@@ -202,16 +216,40 @@ graph = graph_builder.compile()
 # ============================================================
 
 
-def ask_knowledgeguard(question: str) -> str:
+def ask_knowledgeguard(
+    question: str,
+    user_id: str | None = None,
+    return_details: bool = False,
+) -> Any:
     """
     Ask a question using the fixed RAG workflow.
 
     Every question follows:
     START -> RETRIEVE -> GENERATE -> END
     """
+    active_user_id = user_id or USER_ID
+    user = next((u for u in users if u["user_id"] == active_user_id), None)
+    user_groups = user["groups"] if user else []
 
-    result = graph.invoke({"question": question}, config=config)
+    with measure_latency() as timing:
+        result = graph.invoke(
+            {"question": question, "user_id": active_user_id},
+            config=config,
+        )
 
+    # Log query and retrieval access event for observability
+    log_query_event(
+        user_id=active_user_id,
+        user_groups=user_groups,
+        question=question,
+        answer=result.get("answer", ""),
+        retrieval_audit=result.get("audit_data", {}),
+        trace_id=thread_id,
+        latency_ms=timing["latency_ms"],
+    )
+
+    if return_details:
+        return result
     return result["answer"]
 
 
@@ -219,50 +257,55 @@ def ask_knowledgeguard(question: str) -> str:
 # 10. TERMINAL UI
 # ============================================================
 
-console.print(
-    f"[bold]User ID:[/bold] {current_user['user_id']}  "
-    f"[bold]Name:[/bold] {current_user['name']}  "
-    f"[bold]Groups:[/bold] {', '.join(current_user['groups'])}"
-)
 
-console.print(
-    Panel.fit(
-        "[bold cyan]Welcome to KnowledgeGaurd[/bold cyan]\n\n"
-        "[bold white]Lumetra's Knowledge Assistant[/bold white]\n\n"
-        "I'm an AI-powered chatbot designed to help you "
-        "explore and understand Lumetra's knowledge base.\n\n"
-        "Ask me anything related to Lumetra, including "
-        "company information, policies, processes, "
-        "documents, and more.\n\n"
-        "[italic]How can I help you today?[/italic]\n\n"
-        "[dim]Type [bold]exit[/bold], [bold]quit[/bold], "
-        "or [bold]q[/bold] to stop.[/dim]",
-        border_style="cyan",
-        padding=(1, 2),
+def main():
+    console.print(
+        f"[bold]User ID:[/bold] {current_user['user_id']}  "
+        f"[bold]Name:[/bold] {current_user['name']}  "
+        f"[bold]Groups:[/bold] {', '.join(current_user['groups'])}"
     )
-)
+
+    console.print(
+        Panel.fit(
+            "[bold cyan]Welcome to KnowledgeGaurd[/bold cyan]\n\n"
+            "[bold white]Lumetra's Knowledge Assistant[/bold white]\n\n"
+            "I'm an AI-powered chatbot designed to help you "
+            "explore and understand Lumetra's knowledge base.\n\n"
+            "Ask me anything related to Lumetra, including "
+            "company information, policies, processes, "
+            "documents, and more.\n\n"
+            "[italic]How can I help you today?[/italic]\n\n"
+            "[dim]Type [bold]exit[/bold], [bold]quit[/bold], "
+            "or [bold]q[/bold] to stop.[/dim]",
+            border_style="cyan",
+            padding=(1, 2),
+        )
+    )
+
+    # ============================================================
+    # 11. CHAT LOOP
+    # ============================================================
+
+    while True:
+        user_input = Prompt.ask("\n[bold cyan]You[/bold cyan]").strip()
+
+        if user_input.lower() in {"exit", "quit", "q"}:
+            console.print("[cyan]Goodbye![/cyan]")
+
+            break
+
+        if not user_input:
+            console.print("[red]Please enter a message.[/red]")
+
+            continue
+
+        with console.status(
+            "[bold green]Searching Lumetra knowledge base...[/bold green]", spinner="dots"
+        ):
+            answer = ask_knowledgeguard(user_input)
+
+        console.print(Panel(Markdown(answer), title="KnowledgeGaurd", border_style="green"))
 
 
-# ============================================================
-# 11. CHAT LOOP
-# ============================================================
-
-while True:
-    user_input = Prompt.ask("\n[bold cyan]You[/bold cyan]").strip()
-
-    if user_input.lower() in {"exit", "quit", "q"}:
-        console.print("[cyan]Goodbye![/cyan]")
-
-        break
-
-    if not user_input:
-        console.print("[red]Please enter a message.[/red]")
-
-        continue
-
-    with console.status(
-        "[bold green]Searching Lumetra knowledge base...[/bold green]", spinner="dots"
-    ):
-        answer = ask_knowledgeguard(user_input)
-
-    console.print(Panel(Markdown(answer), title="KnowledgeGaurd", border_style="green"))
+if __name__ == "__main__":
+    main()
